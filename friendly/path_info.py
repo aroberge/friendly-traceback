@@ -7,6 +7,8 @@ If Friendly-traceback is used by some other program,
 it might be desirable to exclude additional files.
 """
 import os
+import pathlib
+from typing import Set
 
 EXCLUDED_FILE_PATH = set()
 EXCLUDED_DIR_NAMES = set()
@@ -17,7 +19,7 @@ def exclude_file_from_traceback(full_path):
     Friendly-traceback.  Note that this does not apply to
     the true Python traceback obtained using "debug_tb".
     """
-    EXCLUDED_FILE_PATH.add(full_path)
+    EXCLUDED_FILE_PATH.add(pathlib.Path(full_path))
 
 
 def exclude_directory_from_traceback(dir_name):
@@ -26,9 +28,7 @@ def exclude_directory_from_traceback(dir_name):
     Note that this does not apply to the true Python traceback
     obtained using "debug_tb".
     """
-    if dir_name[-1] != os.path.sep:
-        dir_name += os.path.sep
-    EXCLUDED_DIR_NAMES.add(dir_name)
+    EXCLUDED_DIR_NAMES.add(pathlib.Path(dir_name))
 
 
 dirname = os.path.dirname(__file__)
@@ -39,8 +39,9 @@ def is_excluded_file(full_path):
     """Determines if the file belongs to the group that is excluded from tracebacks."""
     if full_path.startswith("<frozen "):
         return True
-    for dirs in EXCLUDED_DIR_NAMES:
-        if full_path.startswith(dirs):
+    full_path = pathlib.Path(full_path)
+    for directory in EXCLUDED_DIR_NAMES:
+        if directory in full_path.parents:
             return True
     return full_path in EXCLUDED_FILE_PATH
 
@@ -67,7 +68,7 @@ def include_file_in_traceback(full_path):
                  include_file_in_traceback(some_module.__file__)
 
     """
-    EXCLUDED_FILE_PATH.discard(full_path)
+    EXCLUDED_FILE_PATH.discard(pathlib.Path(full_path))
 
 
 class PathUtil:

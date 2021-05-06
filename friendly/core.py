@@ -640,7 +640,7 @@ class FriendlyTraceback:
             for line in python_tb:  # excluding our own code
                 if exclude and line.strip() == "exec(code, self.locals)":
                     continue
-                exclude = any(filename in line for filename in EXCLUDED_FILE_PATH)
+                exclude = any(str(filename) in line for filename in EXCLUDED_FILE_PATH)
                 if exclude:
                     continue
                 tb.append(line)
